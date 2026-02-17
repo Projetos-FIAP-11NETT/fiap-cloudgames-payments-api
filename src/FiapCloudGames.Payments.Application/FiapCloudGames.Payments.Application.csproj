@@ -7,6 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="12.1.1" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+    <PackageReference Include="MediatR" Version="14.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.3" />
+    <PackageReference Include="Polly" Version="8.6.5" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\FiapCloudGames.Payments.Domain\FiapCloudGames.Payments.Domain.csproj" />
   </ItemGroup>
 

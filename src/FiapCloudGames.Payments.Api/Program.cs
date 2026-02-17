@@ -1,34 +1,25 @@
-﻿using FiapCloudGames.Payments.Application.Interfaces;
-using FiapCloudGames.Payments.Infrastructure.Data;
-using FiapCloudGames.Payments.Infrastructure.Repositories;
-using Microsoft.EntityFrameworkCore;
+﻿using FiapCloudGames.Payments.Api.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
+var configuration = builder.Configuration;
 
 builder.Services.AddControllers();
+builder.Services.AddApplicationServices(configuration);
 builder.Services.AddEndpointsApiExplorer();
-//builder.Services.AddSwaggerGen();
-
-// Database
-builder.Services.AddDbContext<PaymentsDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        b => b.MigrationsAssembly("FiapCloudGames.Payments.Infrastructure")
-    ));
-
-// Repositories
-builder.Services.AddScoped<IPaymentsRepository, PaymentsRepository>();
+builder.Services.AddOpenApiConfiguration();
+builder.Services.AddLoggingConfiguration();
+builder.Services.AddHealthCheckConfiguration(configuration);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.MapOpenApiConfiguration();
 }
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHealthCheckEndpoints();
 
 app.Run();
