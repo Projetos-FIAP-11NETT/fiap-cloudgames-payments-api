@@ -57,7 +57,7 @@ public class Payment
     public void Approve(
         string transactionId,
         PaymentMethod paymentMethod,
-        string cardLastFourDigits,
+        string? cardLastFourDigits,
         int processingTimeMs)
     {
         if (Status != PaymentStatus.Processing)

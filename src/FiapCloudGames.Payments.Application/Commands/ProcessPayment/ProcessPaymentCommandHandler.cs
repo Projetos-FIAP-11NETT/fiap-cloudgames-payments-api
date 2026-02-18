@@ -101,7 +101,10 @@ public class ProcessPaymentCommandHandler : IRequestHandler<ProcessPaymentComman
             // ✅ APROVAR PAGAMENTO
             var transactionId = TransactionId.Generate();
             var paymentMethod = GetRandomPaymentMethod();
-            var cardDigits = GenerateRandomCardDigits();
+            var cardDigits = (paymentMethod == PaymentMethod.CreditCard ||
+                                     paymentMethod == PaymentMethod.DebitCard)
+                        ? GenerateRandomCardDigits()
+                        : null;
 
             payment.Approve(transactionId, paymentMethod, cardDigits, processingTimeMs);
 
