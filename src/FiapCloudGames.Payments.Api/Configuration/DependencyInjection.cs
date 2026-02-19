@@ -1,7 +1,8 @@
-﻿using FiapCloudGames.Payments.Application.Behaviors;
+using FiapCloudGames.Payments.Application.Behaviors;
 using FiapCloudGames.Payments.Application.Interfaces;
 using FiapCloudGames.Payments.Infrastructure.Data;
 using FiapCloudGames.Payments.Infrastructure.Repositories;
+using FiapCloudGames.Queue.Configurations;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
@@ -14,6 +15,9 @@ public static class DependencyInjection
     {
         // Database
         services.AddDatabase(configuration);
+
+        // Queue / RabbitMQ
+        services.AddQueueConfig(configuration);
 
         // MediatR
         services.AddMediatRServices();
