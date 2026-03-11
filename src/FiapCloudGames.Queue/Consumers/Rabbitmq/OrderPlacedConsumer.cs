@@ -45,6 +45,8 @@ public class OrderPlacedConsumer(
                 ? new DateTimeOffset(DateTime.SpecifyKind(payment.ProcessedAt.Value, DateTimeKind.Utc))
                 : DateTimeOffset.UtcNow;
 
+            var correlationId = context.CorrelationId;
+
             await paymentProcessedPublisher.PublishAsync(
                 orderId: context.Message.OrderId,
                 amount: payment.Amount,
@@ -54,6 +56,7 @@ public class OrderPlacedConsumer(
                     : FiapCloudGames.Notifications.Domain.Enums.PaymentStatus.Rejected,
                 email: context.Message.Email,
                 name: context.Message.Name,
+                correlationId: correlationId,
                 cancellationToken: context.CancellationToken);
 
             _logger.LogInformation(

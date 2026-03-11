@@ -13,15 +13,15 @@ builder.Services.AddHealthCheckConfiguration(configuration);
 var app = builder.Build();
 
 app.ApplyMigrations();
+app.MapControllers();
 
-if (app.Environment.IsDevelopment())
-{
+// if (app.Environment.IsDevelopment())
+// {
     app.MapOpenApiConfiguration();
-}
+// }
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
-app.MapControllers();
 app.MapHealthCheckEndpoints();
 
 app.Run();

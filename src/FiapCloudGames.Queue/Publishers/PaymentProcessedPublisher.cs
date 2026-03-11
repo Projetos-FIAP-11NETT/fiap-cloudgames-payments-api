@@ -18,6 +18,7 @@ public class PaymentProcessedPublisher(IRabbitmqPublish bus, ILogger<PaymentProc
         PaymentStatus paymentStatus,
         string email,
         string name,
+        Guid? correlationId = null,
         CancellationToken cancellationToken = default)
     {
         _logger.LogDebug(
@@ -32,7 +33,15 @@ public class PaymentProcessedPublisher(IRabbitmqPublish bus, ILogger<PaymentProc
             PaymentStatus = paymentStatus,
             Email = email,
             Name = name
-        }, cancellationToken);
+        },
+        context =>
+        {
+            if (correlationId.HasValue)
+            {
+                context.CorrelationId = correlationId.Value;
+            }
+        },
+        cancellationToken);
     }
 }
 

@@ -11,6 +11,7 @@ public interface IPaymentProcessedPublisher
         PaymentStatus paymentStatus,
         string email,
         string name,
+        Guid? correlationId = null,
         CancellationToken cancellationToken = default);
 }
 
