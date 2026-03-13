@@ -4,3 +4,8 @@ GET {{FiapCloudGames.Payments.Api_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+POST {{FiapCloudGames.Payments.Api_HostAddress}}/api/payments/test-order-placed
+Accept: application/json
+
+###

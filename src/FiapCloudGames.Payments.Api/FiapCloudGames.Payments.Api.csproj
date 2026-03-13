@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FiapCloudGames.Payments.Infrastructure\FiapCloudGames.Payments.Infrastructure.csproj" />
+    <ProjectReference Include="..\FiapCloudGames.Payments.Observability\FiapCloudGames.Payments.Observability.csproj" />
     <ProjectReference Include="..\FiapCloudGames.Queue\FiapCloudGames.Queue.csproj" />
   </ItemGroup>
 

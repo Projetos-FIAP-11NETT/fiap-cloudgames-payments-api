@@ -17,14 +17,23 @@ public class OrderPlacedConsumer(
 
     public async Task Consume(ConsumeContext<IOrderPlaced> context)
     {
+        var correlationId = context.CorrelationId?.ToString()
+            ?? context.ConversationId?.ToString()
+            ?? context.MessageId?.ToString()
+            ?? "n/a";
+
         try
         {
-            _logger.LogInformation(
-                "OrderPlaced Received: {OrderId} (UserId: {UserId}, GameId: {GameId}, Price: {Price})",
+            if (_logger.IsEnabled(LogLevel.Information))
+            {
+                _logger.LogInformation(
+                "[payments-service] CorrelationId: {CorrelationId} | OrderPlacedConsumer - Received OrderId: {OrderId} (UserId: {UserId}, GameId: {GameId}, Price: {Price})",
+                correlationId,
                 context.Message.OrderId,
                 context.Message.UserId,
                 context.Message.GameId,
                 context.Message.Price);
+            }
 
             // Pagamentos hoje está modelado com OrderId como Guid.
             // Para manter compatibilidade com o contrato atual (OrderId int),
@@ -45,7 +54,7 @@ public class OrderPlacedConsumer(
                 ? new DateTimeOffset(DateTime.SpecifyKind(payment.ProcessedAt.Value, DateTimeKind.Utc))
                 : DateTimeOffset.UtcNow;
 
-            var correlationId = context.CorrelationId;
+            var correlationGuid = context.CorrelationId;
 
             await paymentProcessedPublisher.PublishAsync(
                 orderId: context.Message.OrderId,
@@ -56,17 +65,25 @@ public class OrderPlacedConsumer(
                     : FiapCloudGames.Notifications.Domain.Enums.PaymentStatus.Rejected,
                 email: context.Message.Email,
                 name: context.Message.Name,
-                correlationId: correlationId,
+                correlationId: correlationGuid,
                 cancellationToken: context.CancellationToken);
 
-            _logger.LogInformation(
-                "PaymentProcessed published for OrderId {OrderId}, Status {Status}",
+            if (_logger.IsEnabled(LogLevel.Information))
+            {
+                _logger.LogInformation(
+                "[payments-service] CorrelationId: {CorrelationId} | OrderPlacedConsumer - PaymentProcessed published for OrderId {OrderId}, Status {Status}",
+                correlationId,
                 context.Message.OrderId,
                 approved ? "Approved" : "Rejected");
+            }
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "OrderPlaced - Error processing: {OrderId}", context.Message.OrderId);
+            _logger.LogError(
+                e,
+                "[payments-service] CorrelationId: {CorrelationId} | OrderPlacedConsumer - Error processing OrderId: {OrderId}",
+                correlationId,
+                context.Message.OrderId);
         }
     }
 }

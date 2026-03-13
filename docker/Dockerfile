@@ -9,6 +9,7 @@ COPY ./src/FiapCloudGames.Payments.Api/*.csproj ./FiapCloudGames.Payments.Api/
 COPY ./src/FiapCloudGames.Payments.Application/*.csproj ./FiapCloudGames.Payments.Application/
 COPY ./src/FiapCloudGames.Payments.Domain/*.csproj ./FiapCloudGames.Payments.Domain/
 COPY ./src/FiapCloudGames.Payments.Infrastructure/*.csproj ./FiapCloudGames.Payments.Infrastructure/
+COPY ./src/FiapCloudGames.Payments.Observability/*.csproj ./FiapCloudGames.Payments.Observability/
 COPY ./src/FiapCloudGames.Payments.Tests/*.csproj ./FiapCloudGames.Payments.Tests/
 COPY ./src/FiapCloudGames.Queue/*.csproj ./FiapCloudGames.Queue/
 
@@ -52,6 +53,20 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=publish /app/publish .
+
+# Passo 6: Instalação do agente New Relic (observabilidade)
+RUN apt-get update && apt-get install -y curl ca-certificates gnupg \
+    && echo 'deb [signed-by=/etc/apt/keyrings/newrelic-apt.gpg] http://apt.newrelic.com/debian/ newrelic non-free' | tee /etc/apt/sources.list.d/newrelic.list \
+    && curl -fsSL https://download.newrelic.com/NEWRELIC_APT_2DAD550E.public | gpg --dearmor > /etc/apt/keyrings/newrelic-apt.gpg \
+    && apt-get update \
+    && apt-get install -y newrelic-dotnet-agent \
+    && rm -rf /var/lib/apt/lists/*
+
+# Habilitar o agente New Relic
+ENV CORECLR_ENABLE_PROFILING=1 \
+    CORECLR_PROFILER={36032161-FFC0-4B61-B559-F6C5D41BAE5A} \
+    CORECLR_NEWRELIC_HOME=/usr/local/newrelic-dotnet-agent \
+    CORECLR_PROFILER_PATH=/usr/local/newrelic-dotnet-agent/libNewRelicProfiler.so
 
 EXPOSE 8081
 

@@ -1,8 +1,10 @@
-﻿using FiapCloudGames.Payments.Application.Commands.ProcessPayment;
+using FiapCloudGames.Payments.Application.Commands.ProcessPayment;
 using FiapCloudGames.Payments.Application.DTOs;
 using FiapCloudGames.Payments.Application.Queries.GetPaymentById;
 using FiapCloudGames.Payments.Application.Queries.GetPaymentsByUserId;
+using FiapCloudGames.Queue.Contracts;
 using MediatR;
+using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FiapCloudGames.Payments.Api.Controllers;
@@ -10,7 +12,11 @@ namespace FiapCloudGames.Payments.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
-public class PaymentsController(IMediator mediator, ILogger<PaymentsController> logger) : ControllerBase
+public class PaymentsController(
+    IMediator mediator,
+    IPublishEndpoint publishEndpoint,
+    ILogger<PaymentsController> logger,
+    IWebHostEnvironment env) : ControllerBase
 {
 
     /// <summary>
@@ -116,4 +122,48 @@ public class PaymentsController(IMediator mediator, ILogger<PaymentsController> 
             });
         }
     }
+
+    /// <summary>
+    /// [APENAS DEVELOPMENT] Publica um IOrderPlaced na fila para testar o consumer e a observabilidade no New Relic.
+    /// O consumer OrderPlacedConsumer será acionado e a transação aparecerá no New Relic com MessageType, CorrelationId, etc.
+    /// </summary>
+    [HttpPost("test-order-placed")]
+    [ProducesResponseType(StatusCodes.Status202Accepted)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> PublishTestOrderPlaced()
+    {
+        if (!env.IsDevelopment())
+            return NotFound();
+
+        var correlationId = Guid.NewGuid();
+        var orderId = 90000 + Random.Shared.Next(1, 9999);
+        var userId = Guid.NewGuid();
+        var gameId = Guid.NewGuid();
+        var price = 99.90m;
+
+        await publishEndpoint.Publish<IOrderPlaced>(new
+        {
+            OrderId = orderId,
+            UserId = userId,
+            GameId = gameId,
+            Price = price,
+            Email = "test-newrelic@example.com",
+            Name = "Test New Relic"
+        }, context =>
+        {
+            context.CorrelationId = correlationId;
+        });
+
+        logger.LogInformation(
+            "Test IOrderPlaced published. CorrelationId: {CorrelationId}. Busque por este ID no New Relic (atributo CorrelationId).",
+            correlationId);
+
+        return Accepted(new
+        {
+            message = "IOrderPlaced publicado. O consumer será acionado; veja a transação no New Relic.",
+            correlationId,
+            hint = "No New Relic: APM > Transactions ou Distributed Tracing, filtre por atributo customizado CorrelationId = " + correlationId
+        });
+    }
+
 }

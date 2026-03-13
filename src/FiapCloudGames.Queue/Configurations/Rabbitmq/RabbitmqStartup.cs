@@ -1,3 +1,4 @@
+using FiapCloudGames.Payments.Observability.Providers.NewRelic;
 using FiapCloudGames.Queue.Configurations.MassTransit;
 using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,7 +14,8 @@ public static class RabbitmqStartup
         {
             x.AddConsumers(GetConsumers());
 
-            x.SetKebabCaseEndpointNameFormatter();
+            x.SetEndpointNameFormatter(
+                new KebabCaseEndpointNameFormatter("payments", false));
 
             x.UsingRabbitMq((context, cfg) =>
             {
@@ -30,6 +32,8 @@ public static class RabbitmqStartup
                         h.Username(rabbitmqSettings.Username);
                         h.Password(rabbitmqSettings.Password);
                     });
+
+                cfg.UseConsumeFilter(typeof(NewRelicConsumeFilter<>), context);
 
                 cfg.ConfigureEndpoints(context);
             });

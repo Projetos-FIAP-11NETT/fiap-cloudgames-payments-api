@@ -33,8 +33,14 @@ public class ValidationBehaviorTests
         var request = new TestRequest();
         var next = new RequestHandlerDelegate<TestResponse>(ct => Task.FromResult(new TestResponse()));
 
-        // Act & Assert
-        await Assert.ThrowsAsync<ValidationException>(() => behavior.Handle(request, next, CancellationToken.None));
+        // Act
+        var act = () => behavior.Handle(request, next, CancellationToken.None);
+
+        // Assert
+        var exception = await act.Should().ThrowAsync<ValidationException>();
+        exception.Which.Errors.Should().NotBeEmpty();
+        exception.Which.Errors.Should().Contain(e => e.PropertyName == nameof(TestRequest.Name));
+        exception.Which.Errors.Should().Contain(e => !string.IsNullOrEmpty(e.ErrorMessage));
     }
 
     [Fact]

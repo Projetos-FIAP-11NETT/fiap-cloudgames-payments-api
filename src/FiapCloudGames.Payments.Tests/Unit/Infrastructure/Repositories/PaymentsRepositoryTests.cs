@@ -105,6 +105,20 @@ public class PaymentsRepositoryTests : IDisposable
     }
 
     [Fact]
+    public async Task GetByUserIdAsync_ShouldReturnEmptyList_WhenUserHasNoPayments()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+
+        // Act
+        var results = await _repository.GetByUserIdAsync(userId);
+
+        // Assert
+        results.Should().NotBeNull();
+        results.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task ExistsByTransactionIdAsync_ShouldReturnTrue_WhenExists()
     {
         // Arrange

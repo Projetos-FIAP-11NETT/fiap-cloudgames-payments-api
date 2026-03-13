@@ -21,9 +21,12 @@ public class PaymentProcessedPublisher(IRabbitmqPublish bus, ILogger<PaymentProc
         Guid? correlationId = null,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug(
-            "Publishing IPaymentProcessed to RabbitMQ: OrderId={OrderId}, Amount={Amount}, Status={Status}",
-            orderId, amount, paymentStatus);
+        _logger.LogInformation(
+            "[payments-service] CorrelationId: {CorrelationId} | PaymentProcessedPublisher - Publishing IPaymentProcessed OrderId: {OrderId}, Amount: {Amount}, Status: {Status}",
+            correlationId?.ToString() ?? "n/a",
+            orderId,
+            amount,
+            paymentStatus);
 
         return _publishEndpoint.Publish<IPaymentProcessed>(new
         {
