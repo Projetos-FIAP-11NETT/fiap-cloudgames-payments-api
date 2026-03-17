@@ -1,4 +1,5 @@
 using FiapCloudGames.Payments.Application.Behaviors;
+using FiapCloudGames.Payments.Application.Interfaces;
 using FluentAssertions;
 using FluentValidation;
 using MediatR;
@@ -9,11 +10,19 @@ namespace FiapCloudGames.Payments.Tests.Unit.Application.Behaviors;
 
 public class ValidationBehaviorTests
 {
+    private sealed class NullCorrelationContext : ICorrelationContext
+    {
+        public string CorrelationId => "n/a";
+        public void SetCorrelationId(string correlationId) { }
+    }
+
+    private static readonly NullCorrelationContext _correlationContext = new();
+
     [Fact]
     public async Task Handle_ShouldCallNext_WhenNoValidators()
     {
         // Arrange
-        var behavior = new ValidationBehavior<TestRequest, TestResponse>([], NullLogger<ValidationBehavior<TestRequest, TestResponse>>.Instance);
+        var behavior = new ValidationBehavior<TestRequest, TestResponse>([], NullLogger<ValidationBehavior<TestRequest, TestResponse>>.Instance, _correlationContext);
         var request = new TestRequest();
         var next = new RequestHandlerDelegate<TestResponse>(ct => Task.FromResult(new TestResponse()));
 
@@ -29,7 +38,7 @@ public class ValidationBehaviorTests
     {
         // Arrange
         var validator = new TestValidator();
-        var behavior = new ValidationBehavior<TestRequest, TestResponse>([validator], NullLogger<ValidationBehavior<TestRequest, TestResponse>>.Instance);
+        var behavior = new ValidationBehavior<TestRequest, TestResponse>([validator], NullLogger<ValidationBehavior<TestRequest, TestResponse>>.Instance, _correlationContext);
         var request = new TestRequest();
         var next = new RequestHandlerDelegate<TestResponse>(ct => Task.FromResult(new TestResponse()));
 
@@ -48,7 +57,7 @@ public class ValidationBehaviorTests
     {
         // Arrange
         var validator = new TestValidator();
-        var behavior = new ValidationBehavior<TestRequest, TestResponse>([validator], NullLogger<ValidationBehavior<TestRequest, TestResponse>>.Instance);
+        var behavior = new ValidationBehavior<TestRequest, TestResponse>([validator], NullLogger<ValidationBehavior<TestRequest, TestResponse>>.Instance, _correlationContext);
         var request = new TestRequest { Name = "Valid" };
         var next = new RequestHandlerDelegate<TestResponse>(ct => Task.FromResult(new TestResponse()));
 

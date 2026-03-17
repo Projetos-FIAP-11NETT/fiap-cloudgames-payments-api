@@ -1,3 +1,4 @@
+using FiapCloudGames.Payments.Application.Interfaces;
 using FiapCloudGames.Payments.Domain.Entities;
 using FiapCloudGames.Payments.Domain.ValueObjects;
 using FiapCloudGames.Payments.Domain.Enums;
@@ -14,6 +15,12 @@ public class PaymentsRepositoryTests : IDisposable
     private readonly PaymentsDbContext _context;
     private readonly PaymentsRepository _repository;
 
+    private sealed class NullCorrelationContext : ICorrelationContext
+    {
+        public string CorrelationId => "n/a";
+        public void SetCorrelationId(string correlationId) { }
+    }
+
     public PaymentsRepositoryTests()
     {
         var options = new DbContextOptionsBuilder<PaymentsDbContext>()
@@ -22,7 +29,7 @@ public class PaymentsRepositoryTests : IDisposable
 
         _context = new PaymentsDbContext(options);
         var logger = new Logger<PaymentsRepository>(new LoggerFactory());
-        _repository = new PaymentsRepository(_context, logger);
+        _repository = new PaymentsRepository(_context, logger, new NullCorrelationContext());
     }
 
     [Fact]

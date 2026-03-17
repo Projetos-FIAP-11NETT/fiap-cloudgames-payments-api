@@ -1,3 +1,4 @@
+using FiapCloudGames.Payments.Application.Interfaces;
 using System.Diagnostics;
 
 namespace FiapCloudGames.Payments.Api.Middleware;
@@ -6,12 +7,15 @@ public class RequestResponseLoggingMiddleware(RequestDelegate next, ILogger<Requ
 {
     private const string CorrelationIdHeader = "x-correlation-id";
     private const string CorrelationIdItemKey = "CorrelationId";
-    private const string MessageRequest = "[user-service] CorrelationId: {CorrelationId} | Inicio da Requisicao {Method} {Path}";
-    private const string MessageResponse = "[user-service] CorrelationId: {CorrelationId} | Final da Requisicao {Method} {Path} | StatusCode: {StatusCode} {Elapsed}ms";
+    private const string MessageRequest = "[payments-service] CorrelationId: {CorrelationId} | Inicio da Requisicao {Method} {Path}";
+    private const string MessageResponse = "[payments-service] CorrelationId: {CorrelationId} | Final da Requisicao {Method} {Path} | StatusCode: {StatusCode} {Elapsed}ms";
 
     public async Task InvokeAsync(HttpContext context)
     {
+        var correlationContext = context.RequestServices.GetRequiredService<ICorrelationContext>();
         var correlationId = GetOrCreateCorrelationId(context);
+        correlationContext.SetCorrelationId(correlationId);
+
         var stopwatch = Stopwatch.StartNew();
 
         if (logger.IsEnabled(LogLevel.Information))

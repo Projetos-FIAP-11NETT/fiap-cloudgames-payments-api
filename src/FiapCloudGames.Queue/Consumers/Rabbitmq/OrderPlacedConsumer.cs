@@ -1,4 +1,5 @@
 using FiapCloudGames.Payments.Application.Commands.ProcessPayment;
+using FiapCloudGames.Payments.Application.Interfaces;
 using FiapCloudGames.Queue.Contracts;
 using FiapCloudGames.Queue.Publishers;
 using MassTransit;
@@ -10,17 +11,22 @@ namespace FiapCloudGames.Queue.Consumers.Rabbitmq;
 public class OrderPlacedConsumer(
     ILogger<OrderPlacedConsumer> logger,
     IMediator mediator,
+    ICorrelationContext correlationContext,
     IPaymentProcessedPublisher paymentProcessedPublisher
 ) : IConsumer<IOrderPlaced>
 {
     private readonly ILogger<OrderPlacedConsumer> _logger = logger;
+    private readonly ICorrelationContext _correlationContext = correlationContext;
 
     public async Task Consume(ConsumeContext<IOrderPlaced> context)
     {
-        var correlationId = context.CorrelationId?.ToString()
-            ?? context.ConversationId?.ToString()
-            ?? context.MessageId?.ToString()
-            ?? "n/a";
+        var effectiveCorrelationId = context.CorrelationId
+            ?? context.ConversationId
+            ?? context.MessageId
+            ?? NewId.NextGuid();
+
+        var correlationId = effectiveCorrelationId.ToString();
+        _correlationContext.SetCorrelationId(correlationId);
 
         try
         {
@@ -54,7 +60,7 @@ public class OrderPlacedConsumer(
                 ? new DateTimeOffset(DateTime.SpecifyKind(payment.ProcessedAt.Value, DateTimeKind.Utc))
                 : DateTimeOffset.UtcNow;
 
-            var correlationGuid = context.CorrelationId;
+            var correlationGuid = effectiveCorrelationId;
 
             await paymentProcessedPublisher.PublishAsync(
                 orderId: context.Message.OrderId,

@@ -31,13 +31,21 @@ public class PaymentsController(
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById([FromRoute] Guid id)
     {
-        logger.LogInformation("GET /api/payments/{PaymentId}", id);
+        var correlationId = GetCorrelationId();
+
+        logger.LogInformation(
+            "[payments-service] CorrelationId: {CorrelationId} | GET /api/payments/{PaymentId}",
+            correlationId,
+            id);
 
         var payment = await mediator.Send(new GetPaymentByIdQuery(id));
 
         if (payment == null)
         {
-            logger.LogWarning("Pagamento {PaymentId} não encontrado", id);
+            logger.LogWarning(
+                "[payments-service] CorrelationId: {CorrelationId} | Pagamento {PaymentId} não encontrado",
+                correlationId,
+                id);
             return NotFound(new { message = $"Pagamento {id} não encontrado" });
         }
 
@@ -54,7 +62,12 @@ public class PaymentsController(
     [ProducesResponseType(typeof(List<PaymentDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetByUserId([FromRoute] Guid userId)
     {
-        logger.LogInformation("GET /api/payments/user/{UserId}", userId);
+        var correlationId = GetCorrelationId();
+
+        logger.LogInformation(
+            "[payments-service] CorrelationId: {CorrelationId} | GET /api/payments/user/{UserId}",
+            correlationId,
+            userId);
 
         var payments = await mediator.Send(new GetPaymentsByUserIdQuery(userId));
 
@@ -83,8 +96,11 @@ public class PaymentsController(
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> SimulatePayment([FromBody] ProcessPaymentCommand command)
     {
+        var correlationId = GetCorrelationId();
+
         logger.LogInformation(
-            "POST /api/payments/simulate - OrderId: {OrderId}, Amount: R$ {Amount:F2}",
+            "[payments-service] CorrelationId: {CorrelationId} | POST /api/payments/simulate - OrderId: {OrderId}, Amount: R$ {Amount:F2}",
+            correlationId,
             command.OrderId,
             command.Amount);
 
@@ -99,7 +115,10 @@ public class PaymentsController(
         }
         catch (FluentValidation.ValidationException ex)
         {
-            logger.LogWarning("Validação falhou: {Errors}", ex.Errors);
+            logger.LogWarning(
+                "[payments-service] CorrelationId: {CorrelationId} | Validação falhou: {Errors}",
+                correlationId,
+                ex.Errors);
 
             return BadRequest(new
             {
@@ -113,7 +132,10 @@ public class PaymentsController(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Erro ao processar pagamento");
+            logger.LogError(
+                ex,
+                "[payments-service] CorrelationId: {CorrelationId} | Erro ao processar pagamento",
+                correlationId);
 
             return BadRequest(new
             {
@@ -155,7 +177,7 @@ public class PaymentsController(
         });
 
         logger.LogInformation(
-            "Test IOrderPlaced published. CorrelationId: {CorrelationId}. Busque por este ID no New Relic (atributo CorrelationId).",
+            "[payments-service] CorrelationId: {CorrelationId} | Test IOrderPlaced published. Busque por este ID no New Relic (atributo CorrelationId).",
             correlationId);
 
         return Accepted(new
@@ -164,6 +186,17 @@ public class PaymentsController(
             correlationId,
             hint = "No New Relic: APM > Transactions ou Distributed Tracing, filtre por atributo customizado CorrelationId = " + correlationId
         });
+    }
+
+    private string GetCorrelationId()
+    {
+        if (Request.Headers.TryGetValue("x-correlation-id", out var correlationIdHeader)
+            && !string.IsNullOrWhiteSpace(correlationIdHeader))
+        {
+            return correlationIdHeader.ToString();
+        }
+
+        return HttpContext.TraceIdentifier;
     }
 
 }

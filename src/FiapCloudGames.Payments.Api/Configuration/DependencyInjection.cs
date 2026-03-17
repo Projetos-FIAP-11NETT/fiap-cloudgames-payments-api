@@ -1,3 +1,4 @@
+using FiapCloudGames.Payments.Api.Services;
 using FiapCloudGames.Payments.Application.Behaviors;
 using FiapCloudGames.Payments.Application.Interfaces;
 using FiapCloudGames.Payments.Infrastructure.Data;
@@ -27,6 +28,9 @@ public static class DependencyInjection
 
         // Repositories
         services.AddRepositories();
+
+        // Correlation
+        services.AddScoped<ICorrelationContext, CorrelationContext>();
 
         return services;
     }

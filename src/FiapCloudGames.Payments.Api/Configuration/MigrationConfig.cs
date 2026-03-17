@@ -12,16 +12,16 @@ public static class MigrationConfig
         var dataContext = scope.ServiceProvider.GetRequiredService<PaymentsDbContext>();
         var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("MigrationConfig");
 
-        logger.LogInformation("🔄 Aplicando migrações do banco de dados...");
+        logger.LogInformation("[payments-service] CorrelationId: {CorrelationId} | 🔄 Aplicando migrações do banco de dados...", "n/a");
 
         try
         {
             dataContext.Database.Migrate();
-            logger.LogInformation("✅ Migrações aplicadas com sucesso");
+            logger.LogInformation("[payments-service] CorrelationId: {CorrelationId} | ✅ Migrações aplicadas com sucesso", "n/a");
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "❌ Falha ao aplicar migrações");
+            logger.LogError(ex, "[payments-service] CorrelationId: {CorrelationId} | ❌ Falha ao aplicar migrações", "n/a");
             throw;
         }
     }

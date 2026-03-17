@@ -6,7 +6,7 @@ public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddlewa
 {
     private const string CorrelationIdHeader = "x-correlation-id";
     private const string CorrelationIdItemKey = "CorrelationId";
-    private const string MessageException = "[user-service] CorrelationId: {CorrelationId} | Exceção Capturada | Message: {Message}";
+    private const string MessageException = "[payments-service] CorrelationId: {CorrelationId} | Exceção Capturada | Message: {Message}";
 
     public async Task InvokeAsync(HttpContext context)
     {

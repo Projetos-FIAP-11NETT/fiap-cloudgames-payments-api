@@ -7,18 +7,21 @@ using Microsoft.Extensions.Logging;
 namespace FiapCloudGames.Payments.Application.Queries.GetPaymentsByUserId;
 public class GetPaymentsByUserIdQueryHandler(
     IPaymentsRepository repository,
-    ILogger<GetPaymentsByUserIdQueryHandler> logger) : IRequestHandler<GetPaymentsByUserIdQuery, List<PaymentDto>>
+    ILogger<GetPaymentsByUserIdQueryHandler> logger,
+    ICorrelationContext correlationContext) : IRequestHandler<GetPaymentsByUserIdQuery, List<PaymentDto>>
 {
     private readonly IPaymentsRepository _repository = repository;
     private readonly ILogger<GetPaymentsByUserIdQueryHandler> _logger = logger;
+    private readonly ICorrelationContext _correlationContext = correlationContext;
 
     public async Task<List<PaymentDto>> Handle(GetPaymentsByUserIdQuery request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("🔍 Buscando pagamentos do usuário {UserId}", request.UserId);
+        _logger.LogInformation("[payments-service] CorrelationId: {CorrelationId} | 🔍 Buscando pagamentos do usuário {UserId}", _correlationContext.CorrelationId, request.UserId);
 
         var payments = await _repository.GetByUserIdAsync(request.UserId, cancellationToken);
 
-        _logger.LogInformation("✅ Encontrados {Count} pagamentos para o usuário {UserId}",
+        _logger.LogInformation("[payments-service] CorrelationId: {CorrelationId} | ✅ Encontrados {Count} pagamentos para o usuário {UserId}",
+            _correlationContext.CorrelationId,
             payments.Count,
             request.UserId);
 

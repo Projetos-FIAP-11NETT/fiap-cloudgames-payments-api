@@ -17,17 +17,20 @@ public class ProcessPaymentCommandHandler : IRequestHandler<ProcessPaymentComman
     private readonly IPaymentsRepository _repository;
     private readonly IConfiguration _configuration;
     private readonly ILogger<ProcessPaymentCommandHandler> _logger;
+    private readonly ICorrelationContext _correlationContext;
     private readonly AsyncRetryPolicy _retryPolicy;
     private readonly Random _random = new();
 
     public ProcessPaymentCommandHandler(
         IPaymentsRepository repository,
         IConfiguration configuration,
-        ILogger<ProcessPaymentCommandHandler> logger)
+        ILogger<ProcessPaymentCommandHandler> logger,
+        ICorrelationContext correlationContext)
     {
         _repository = repository;
         _configuration = configuration;
         _logger = logger;
+        _correlationContext = correlationContext;
 
         // Configurar Polly Retry Policy
         _retryPolicy = Policy
@@ -38,7 +41,8 @@ public class ProcessPaymentCommandHandler : IRequestHandler<ProcessPaymentComman
                 onRetry: (exception, timeSpan, retryCount, context) =>
                 {
                     _logger.LogWarning(
-                        "🔄 Tentativa {RetryCount}/3 após falha. Aguardando {Seconds}s. Erro: {Message}",
+                        "[payments-service] CorrelationId: {CorrelationId} | 🔄 Tentativa {RetryCount}/3 após falha. Aguardando {Seconds}s. Erro: {Message}",
+                        _correlationContext.CorrelationId,
                         retryCount,
                         timeSpan.TotalSeconds,
                         exception.Message);
@@ -48,7 +52,8 @@ public class ProcessPaymentCommandHandler : IRequestHandler<ProcessPaymentComman
     public async Task<PaymentDto> Handle(ProcessPaymentCommand request, CancellationToken cancellationToken)
     {
         _logger.LogInformation(
-            "💳 Iniciando processamento de pagamento - OrderId: {OrderId}, Amount: R$ {Amount:F2}",
+            "[payments-service] CorrelationId: {CorrelationId} | 💳 Iniciando processamento de pagamento - OrderId: {OrderId}, Amount: R$ {Amount:F2}",
+            _correlationContext.CorrelationId,
             request.OrderId,
             request.Amount);
 
@@ -110,7 +115,7 @@ public class ProcessPaymentCommandHandler : IRequestHandler<ProcessPaymentComman
 
             await _repository.UpdateAsync(payment, cancellationToken);
 
-            _logger.LogInformation(@"
+            _logger.LogInformation(@"[payments-service] CorrelationId: {CorrelationId} |
 ╔══════════════════════════════════════════════════════════════╗
 ║                   ✅ PAGAMENTO APROVADO ✅                    ║
 ╚══════════════════════════════════════════════════════════════╝
@@ -123,6 +128,7 @@ Transaction ID: {TransactionId}
 Tempo: {ProcessingTime}ms
 Status: APROVADO
 ╚══════════════════════════════════════════════════════════════╝",
+                _correlationContext.CorrelationId,
                 payment.Id,
                 payment.OrderId,
                 payment.Amount,
@@ -140,7 +146,7 @@ Status: APROVADO
 
             await _repository.UpdateAsync(payment, cancellationToken);
 
-            _logger.LogWarning(@"
+            _logger.LogWarning(@"[payments-service] CorrelationId: {CorrelationId} |
 ╔══════════════════════════════════════════════════════════════╗
 ║                   ❌ PAGAMENTO REJEITADO ❌                   ║
 ╚══════════════════════════════════════════════════════════════╝
@@ -151,6 +157,7 @@ Motivo: {RejectionReason}
 Tempo: {ProcessingTime}ms
 Status: REJEITADO
 ╚══════════════════════════════════════════════════════════════╝",
+                _correlationContext.CorrelationId,
                 payment.Id,
                 payment.OrderId,
                 payment.Amount,
