@@ -1,0 +1,9 @@
+<Solution>
+  <Project Path="FiapCloudGames.Payments.Api/FiapCloudGames.Payments.Api.csproj" Id="296f4cf8-47a1-4c15-908d-cc5749726736" />
+  <Project Path="FiapCloudGames.Payments.Application/FiapCloudGames.Payments.Application.csproj" Id="fab0d481-412e-42a8-9474-ca5b9b12b2e8" />
+  <Project Path="FiapCloudGames.Payments.Domain/FiapCloudGames.Payments.Domain.csproj" Id="6a4adf6b-bfa7-4190-ab95-7ff6f2cae349" />
+  <Project Path="FiapCloudGames.Payments.Infrastructure/FiapCloudGames.Payments.Infrastructure.csproj" Id="dcc3032b-2af2-4618-8f14-b17b3ffc4135" />
+  <Project Path="FiapCloudGames.Payments.Tests/FiapCloudGames.Payments.Tests.csproj" Id="9837e7c6-add1-44a1-8524-3c1216451873" />
+  <Project Path="FiapCloudGames.Payments.Observability/FiapCloudGames.Payments.Observability.csproj" Id="a1b2c3d4-e5f6-7890-abcd-ef1234567890" />
+  <Project Path="FiapCloudGames.Queue/FiapCloudGames.Queue.csproj" Id="8622f652-c353-45d9-ad8c-46b928a6b7e1" />
+</Solution>

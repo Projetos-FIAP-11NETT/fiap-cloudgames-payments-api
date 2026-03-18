@@ -1,0 +1,21 @@
+# Build
+**/bin/
+**/obj/
+
+# Visual Studio
+.vs/
+.vscode/
+
+# Git
+.git/
+.gitignore
+
+# Docker
+docker-compose*
+Dockerfile
+
+# Outros
+README.md
+*.user
+*.suo
+*.cache
