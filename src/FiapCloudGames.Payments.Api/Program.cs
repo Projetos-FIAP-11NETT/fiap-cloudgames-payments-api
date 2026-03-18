@@ -21,10 +21,7 @@ app.UseMiddleware<FiapCloudGames.Payments.Observability.Middleware.Observability
 app.ApplyMigrations();
 app.MapControllers();
 
-// if (app.Environment.IsDevelopment())
-// {
-    app.MapOpenApiConfiguration();
-// }
+app.MapOpenApiConfiguration();
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
