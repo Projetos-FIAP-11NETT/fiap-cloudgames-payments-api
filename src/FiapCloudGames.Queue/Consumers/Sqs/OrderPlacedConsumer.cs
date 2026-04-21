@@ -3,7 +3,7 @@ using FiapCloudGames.Queue.Publishers;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace FiapCloudGames.Queue.Consumers.Rabbitmq;
+namespace FiapCloudGames.Queue.Consumers.Sqs;
 
 public sealed class OrderPlacedConsumer(
     ILogger<OrderPlacedConsumer> logger,
@@ -12,6 +12,5 @@ public sealed class OrderPlacedConsumer(
     IPaymentProcessedPublisher paymentProcessedPublisher
 ) : OrderPlacedConsumerBase(logger, mediator, correlationContext, paymentProcessedPublisher)
 {
-    protected override string TransportTag => "RabbitMQ";
+    protected override string TransportTag => "SQS";
 }
-
