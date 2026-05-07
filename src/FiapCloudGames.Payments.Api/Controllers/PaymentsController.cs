@@ -2,9 +2,10 @@ using FiapCloudGames.Payments.Application.Commands.ProcessPayment;
 using FiapCloudGames.Payments.Application.DTOs;
 using FiapCloudGames.Payments.Application.Queries.GetPaymentById;
 using FiapCloudGames.Payments.Application.Queries.GetPaymentsByUserId;
+using FiapCloudGames.Queue.Configurations.Sqs;
 using FiapCloudGames.Queue.Contracts;
-using MediatR;
 using MassTransit;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FiapCloudGames.Payments.Api.Controllers;
@@ -14,7 +15,7 @@ namespace FiapCloudGames.Payments.Api.Controllers;
 [Produces("application/json")]
 public class PaymentsController(
     IMediator mediator,
-    IPublishEndpoint publishEndpoint,
+    ISqsPublish sqsPublish,
     ILogger<PaymentsController> logger,
     IWebHostEnvironment env) : ControllerBase
 {
@@ -163,7 +164,7 @@ public class PaymentsController(
         var gameId = Guid.NewGuid();
         var price = 99.90m;
 
-        await publishEndpoint.Publish<IOrderPlaced>(new
+        await sqsPublish.Publish<IOrderPlaced>(new
         {
             OrderId = orderId,
             UserId = userId,
