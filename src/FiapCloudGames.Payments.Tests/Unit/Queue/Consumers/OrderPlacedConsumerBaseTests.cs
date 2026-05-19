@@ -15,15 +15,16 @@ namespace FiapCloudGames.Payments.Tests.Unit.Queue.Consumers;
 
 /// <summary>
 /// Subclasse concreta criada exclusivamente para testes da classe base,
-/// expondo um TransportTag controlável pelo teste.
+/// expondo um TransportTag controlï¿½vel pelo teste.
 /// </summary>
 file sealed class TestOrderPlacedConsumer(
     ILogger logger,
     IMediator mediator,
     ICorrelationContext correlationContext,
     IPaymentProcessedPublisher paymentProcessedPublisher,
+    IEmailNotificationPublisher emailNotificationPublisher,
     string transportTag = "TEST"
-) : OrderPlacedConsumerBase(logger, mediator, correlationContext, paymentProcessedPublisher)
+) : OrderPlacedConsumerBase(logger, mediator, correlationContext, paymentProcessedPublisher, emailNotificationPublisher)
 {
     protected override string TransportTag { get; } = transportTag;
 }
@@ -34,6 +35,7 @@ public class OrderPlacedConsumerBaseTests
     private readonly Mock<IMediator> _mediatorMock;
     private readonly Mock<ICorrelationContext> _correlationContextMock;
     private readonly Mock<IPaymentProcessedPublisher> _publisherMock;
+    private readonly Mock<IEmailNotificationPublisher> _emailPublisherMock;
     private readonly OrderPlacedConsumerBase _consumer;
 
     public OrderPlacedConsumerBaseTests()
@@ -42,17 +44,19 @@ public class OrderPlacedConsumerBaseTests
         _mediatorMock = new Mock<IMediator>();
         _correlationContextMock = new Mock<ICorrelationContext>();
         _publisherMock = new Mock<IPaymentProcessedPublisher>();
+        _emailPublisherMock = new Mock<IEmailNotificationPublisher>();
 
         _consumer = new TestOrderPlacedConsumer(
             _loggerMock.Object,
             _mediatorMock.Object,
             _correlationContextMock.Object,
-            _publisherMock.Object);
+            _publisherMock.Object,
+            _emailPublisherMock.Object);
     }
 
     /// <summary>
     /// Cria um ConsumeContext mockado com os dados fornecidos,
-    /// evitando duplicação de código nos testes.
+    /// evitando duplicaï¿½ï¿½o de cï¿½digo nos testes.
     /// </summary>
     private static Mock<ConsumeContext<IOrderPlaced>> BuildConsumeContext(
         int orderId = 42,
@@ -82,7 +86,7 @@ public class OrderPlacedConsumerBaseTests
     }
 
     /// <summary>
-    /// Cria um PaymentDto com status e data de processamento configuráveis.
+    /// Cria um PaymentDto com status e data de processamento configurï¿½veis.
     /// </summary>
     private static PaymentDto BuildPaymentDto(string status = "Approved", DateTime? processedAt = null) =>
         new()
@@ -98,7 +102,7 @@ public class OrderPlacedConsumerBaseTests
 
     /// <summary>
     /// Garante que, quando o mediator retorna status "Approved",
-    /// o publisher é chamado com PaymentStatus.Approved.
+    /// o publisher ï¿½ chamado com PaymentStatus.Approved.
     /// </summary>
     [Fact]
     public async Task Consume_WhenPaymentApproved_ShouldPublishWithApprovedStatus()
@@ -128,7 +132,7 @@ public class OrderPlacedConsumerBaseTests
 
     /// <summary>
     /// Garante que, quando o mediator retorna status "Rejected",
-    /// o publisher é chamado com PaymentStatus.Rejected.
+    /// o publisher ï¿½ chamado com PaymentStatus.Rejected.
     /// </summary>
     [Fact]
     public async Task Consume_WhenPaymentRejected_ShouldPublishWithRejectedStatus()
@@ -156,8 +160,8 @@ public class OrderPlacedConsumerBaseTests
     }
 
     /// <summary>
-    /// Confirma que o CorrelationId do contexto é propagado ao ICorrelationContext,
-    /// garantindo rastreabilidade distribuída entre os serviços.
+    /// Confirma que o CorrelationId do contexto ï¿½ propagado ao ICorrelationContext,
+    /// garantindo rastreabilidade distribuï¿½da entre os serviï¿½os.
     /// </summary>
     [Fact]
     public async Task Consume_ShouldSetCorrelationIdFromContext()
@@ -180,8 +184,8 @@ public class OrderPlacedConsumerBaseTests
     }
 
     /// <summary>
-    /// Valida que, quando CorrelationId é nulo, o consumidor usa ConversationId como fallback,
-    /// respeitando a hierarquia de IDs definida na implementação.
+    /// Valida que, quando CorrelationId ï¿½ nulo, o consumidor usa ConversationId como fallback,
+    /// respeitando a hierarquia de IDs definida na implementaï¿½ï¿½o.
     /// </summary>
     [Fact]
     public async Task Consume_WhenCorrelationIdIsNull_ShouldFallbackToConversationId()
@@ -217,7 +221,7 @@ public class OrderPlacedConsumerBaseTests
     }
 
     /// <summary>
-    /// Assegura que, quando PaymentDto.ProcessedAt é nulo,
+    /// Assegura que, quando PaymentDto.ProcessedAt ï¿½ nulo,
     /// o consumidor usa DateTimeOffset.UtcNow como data do pagamento.
     /// </summary>
     [Fact]
@@ -251,7 +255,7 @@ public class OrderPlacedConsumerBaseTests
     }
 
     /// <summary>
-    /// Verifica se o ProcessPaymentCommand enviado ao mediator contém
+    /// Verifica se o ProcessPaymentCommand enviado ao mediator contï¿½m
     /// exatamente os dados recebidos na mensagem (UserId, GameId e Price).
     /// </summary>
     [Fact]
@@ -279,8 +283,8 @@ public class OrderPlacedConsumerBaseTests
     }
 
     /// <summary>
-    /// Confirma que os campos de notificação (OrderId, Email e Name)
-    /// são repassados ao publisher exatamente como recebidos na mensagem.
+    /// Confirma que os campos de notificaï¿½ï¿½o (OrderId, Email e Name)
+    /// sï¿½o repassados ao publisher exatamente como recebidos na mensagem.
     /// </summary>
     [Fact]
     public async Task Consume_ShouldPublishWithCorrectOrderIdEmailAndName()
@@ -311,8 +315,8 @@ public class OrderPlacedConsumerBaseTests
     }
 
     /// <summary>
-    /// Garante que a comparação do status "Approved" é case-insensitive,
-    /// conforme o uso de StringComparison.OrdinalIgnoreCase na implementação.
+    /// Garante que a comparaï¿½ï¿½o do status "Approved" ï¿½ case-insensitive,
+    /// conforme o uso de StringComparison.OrdinalIgnoreCase na implementaï¿½ï¿½o.
     /// </summary>
     [Theory]
     [InlineData("approved")]
@@ -343,8 +347,8 @@ public class OrderPlacedConsumerBaseTests
     }
 
     /// <summary>
-    /// Cobre o tratamento de erros: quando o mediator lança uma exceção,
-    /// o consumidor não deve propagar o erro, mas deve registrar via LogError com o OrderId.
+    /// Cobre o tratamento de erros: quando o mediator lanï¿½a uma exceï¿½ï¿½o,
+    /// o consumidor nï¿½o deve propagar o erro, mas deve registrar via LogError com o OrderId.
     /// </summary>
     [Fact]
     public async Task Consume_WhenMediatorThrows_ShouldLogErrorAndNotThrow()
@@ -373,8 +377,8 @@ public class OrderPlacedConsumerBaseTests
     }
 
     /// <summary>
-    /// Valida que uma falha no publisher também é capturada pelo bloco catch,
-    /// registrando o erro sem propagar a exceção para o MassTransit.
+    /// Valida que uma falha no publisher tambï¿½m ï¿½ capturada pelo bloco catch,
+    /// registrando o erro sem propagar a exceï¿½ï¿½o para o MassTransit.
     /// </summary>
     [Fact]
     public async Task Consume_WhenPublisherThrows_ShouldLogErrorAndNotThrow()

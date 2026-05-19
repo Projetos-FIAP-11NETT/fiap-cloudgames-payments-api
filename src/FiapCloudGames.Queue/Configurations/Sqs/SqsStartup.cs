@@ -2,6 +2,7 @@ using Amazon.SimpleNotificationService;
 using Amazon.SQS;
 using FiapCloudGames.Payments.Observability.Providers.NewRelic;
 using FiapCloudGames.Queue.Configurations.MassTransit;
+using FiapCloudGames.Queue.Publishers;
 using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -52,6 +53,18 @@ public static class SqsStartup
                 cfg.ConfigureEndpoints(context);
             });
         });
+        
+        services.AddSingleton<IAmazonSQS>(sp =>
+        {
+            var settings = sp.GetRequiredService<IOptions<SqsSettings>>().Value;
+            return new AmazonSQSClient(settings.AccessKey, settings.SecretKey, new AmazonSQSConfig
+            {
+                ServiceURL = settings.ServiceUrl,
+                AuthenticationRegion = settings.Region
+            });
+        });
+
+        services.AddScoped<IEmailNotificationPublisher, EmailNotificationPublisher>();
     }
 
     private static Type[] GetConsumers()

@@ -10,14 +10,15 @@ using Microsoft.Extensions.Logging;
 namespace FiapCloudGames.Queue.Consumers;
 
 /// <summary>
-/// Classe base que encapsula toda a lógica de consumo de OrderPlaced.
+/// Classe base que encapsula toda a lï¿½gica de consumo de OrderPlaced.
 /// Subclasses apenas identificam o transport via <see cref="TransportTag"/>.
 /// </summary>
 public abstract class OrderPlacedConsumerBase(
     ILogger logger,
     IMediator mediator,
     ICorrelationContext correlationContext,
-    IPaymentProcessedPublisher paymentProcessedPublisher
+    IPaymentProcessedPublisher paymentProcessedPublisher,
+    IEmailNotificationPublisher emailNotificationPublisher
 ) : IConsumer<IOrderPlaced>
 {
     /// <summary>
@@ -81,6 +82,29 @@ public abstract class OrderPlacedConsumerBase(
                     TransportTag,
                     context.Message.OrderId,
                     approved ? "Approved" : "Rejected");
+            }
+            
+            var subject = approved
+                ? $"Pagamento Aprovado - Pedido {context.Message.OrderId}"
+                : $"Pagamento Reprovado - Pedido {context.Message.OrderId}";
+
+            var body = approved
+                ? $"Seu pedido {context.Message.OrderId} teve o pagamento aprovado."
+                : $"Seu pedido {context.Message.OrderId} teve pagamento reprovado.";
+
+            await emailNotificationPublisher.PublishAsync(
+                to: context.Message.Email,
+                subject: subject,
+                body: body,
+                cancellationToken: context.CancellationToken);
+
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                logger.LogInformation(
+                    "[payments-service] CorrelationId: {CorrelationId} | {Transport} | OrderPlacedConsumer - Email notification sent to {Email}",
+                    correlationId,
+                    TransportTag,
+                    context.Message.Email);
             }
         }
         catch (Exception e)

@@ -10,7 +10,7 @@ namespace FiapCloudGames.Payments.Tests.Unit.Queue.Consumers.Sqs;
 public class OrderPlacedConsumerTests
 {
     /// <summary>
-    /// Garante que o TransportTag do consumidor SQS é exatamente "SQS",
+    /// Garante que o TransportTag do consumidor SQS ï¿½ exatamente "SQS",
     /// assegurando que os logs produzidos identificam corretamente o transport utilizado.
     /// </summary>
     [Fact]
@@ -21,7 +21,8 @@ public class OrderPlacedConsumerTests
             new Mock<ILogger<OrderPlacedConsumer>>().Object,
             new Mock<IMediator>().Object,
             new Mock<ICorrelationContext>().Object,
-            new Mock<IPaymentProcessedPublisher>().Object);
+            new Mock<IPaymentProcessedPublisher>().Object,
+            new Mock<IEmailNotificationPublisher>().Object);
 
         // Act
         var tag = consumer.GetTransportTagForTest();
