@@ -48,6 +48,7 @@ public static class SqsStartup
                 cfg.UseMessageRetry(r => r.Interval(massTransitSettings.RetryCount, massTransitSettings.Interval));
 
                 cfg.UseConsumeFilter(typeof(NewRelicConsumeFilter<>), context);
+                cfg.UsePublishFilter(typeof(NewRelicPublishFilter<>), context);
 
                 cfg.ConfigureEndpoints(context);
             });
