@@ -10,6 +10,7 @@ public static class ObservabilityConfig
     {
         services.AddScoped<IObservabilityService, NewRelicObservabilityService>();
         services.AddScoped(typeof(NewRelicConsumeFilter<>));
+        services.AddScoped(typeof(NewRelicPublishFilter<>));
 
         return services;
     }
