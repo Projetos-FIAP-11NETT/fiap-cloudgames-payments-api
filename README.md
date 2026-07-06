@@ -40,13 +40,9 @@ src/
    dotnet build
    ```
 
-2. **Configurar conexão e RabbitMQ**
+2. **Configurar credenciais**
 
-   Edite `src/FiapCloudGames.Payments.Api/appsettings.Development.json` (ou use variáveis de ambiente):
-
-   - `ConnectionStrings:DefaultConnection` — connection string do PostgreSQL  
-   - `RabbitmqSettings` — host, porta, virtual host, usuário e senha  
-   - `Payment:ApprovalRate` (opcional) — taxa de aprovação simulada (0 a 1)
+   O projeto **não versiona variáveis de ambiente nem segredos**. Os valores sensíveis no `appsettings.json` ficam vazios e devem ser preenchidos localmente (por env var ou pela sua config local). Use o **`appsettings.Example.json`** como referência da estrutura e das chaves esperadas (PostgreSQL, SQS, etc.).
 
 3. **Aplicar migrations**
 
@@ -148,15 +144,17 @@ dotnet test src/FiapCloudGames.Payments.Tests/FiapCloudGames.Payments.Tests.cspr
 
 ## Configuração
 
-Principais chaves em `appsettings.json` / variáveis de ambiente:
+O projeto **não versiona variáveis de ambiente nem segredos**. Os valores sensíveis no `appsettings.json` ficam vazios e devem ser preenchidos localmente. Use o **`appsettings.Example.json`** como referência da estrutura e das chaves esperadas.
+
+Principais chaves (`appsettings.json` / variáveis de ambiente):
 
 | Configuração | Descrição |
 |--------------|-----------|
 | `ConnectionStrings__DefaultConnection` | Connection string PostgreSQL |
-| `RabbitmqSettings__Address` | Host do RabbitMQ |
-| `RabbitmqSettings__Port` | Porta (ex.: 5672) |
-| `RabbitmqSettings__VirtualHost` | Virtual host (ex.: `/`) |
-| `RabbitmqSettings__Username` / `__Password` | Credenciais |
+| `SqsSettings__Region` | Região AWS (ex.: `us-east-1`) |
+| `SqsSettings__AccessKey` / `__SecretKey` | Credenciais AWS/SQS |
+| `SqsSettings__ServiceUrl` | Endpoint do SQS (ex.: LocalStack) |
+| `MassTransitSettings__RetryCount` / `__Interval` | Retentativas e intervalo (ms) |
 | `Payment__ApprovalRate` | Taxa de aprovação simulada (0–1) |
 
 No Docker, use `__` (dois underscores) para hierarquia; ver exemplos em [docker/README.md](docker/README.md).
