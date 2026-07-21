@@ -26,11 +26,17 @@ public static class SqsStartup
 
                 cfg.Host(sqsSettings.Region, h =>
                 {
-                    h.AccessKey(sqsSettings.AccessKey);
-                    h.SecretKey(sqsSettings.SecretKey);
-
+                    // ServiceUrl setado = LocalStack, precisa de credenciais explicitas.
+                    // Sem ServiceUrl = AWS real: nao definir credenciais aqui deixa o
+                    // MassTransit cair no credential chain padrao do SDK (IAM role do
+                    // node via IMDS), que sao as unicas credenciais validas no AWS
+                    // Academy (as temporarias exigem session token, que AccessKey/SecretKey
+                    // fixos nao suportam).
                     if (!string.IsNullOrWhiteSpace(sqsSettings.ServiceUrl))
                     {
+                        h.AccessKey(sqsSettings.AccessKey);
+                        h.SecretKey(sqsSettings.SecretKey);
+
                         h.Config(new AmazonSQSConfig
                         {
                             ServiceURL = sqsSettings.ServiceUrl,
