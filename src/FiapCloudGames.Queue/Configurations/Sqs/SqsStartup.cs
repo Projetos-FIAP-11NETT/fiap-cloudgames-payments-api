@@ -27,11 +27,13 @@ public static class SqsStartup
                 cfg.Host(sqsSettings.Region, h =>
                 {
                     // ServiceUrl setado = LocalStack, precisa de credenciais explicitas.
-                    // Sem ServiceUrl = AWS real: nao definir credenciais aqui deixa o
-                    // MassTransit cair no credential chain padrao do SDK (IAM role do
-                    // node via IMDS), que sao as unicas credenciais validas no AWS
-                    // Academy (as temporarias exigem session token, que AccessKey/SecretKey
-                    // fixos nao suportam).
+                    // Sem ServiceUrl = AWS real: resolve as credenciais do credential
+                    // chain padrao do SDK (IAM role do node via IMDS) UMA UNICA VEZ aqui
+                    // e compartilha entre todos os receive endpoints. Deixar cada client
+                    // (um por endpoint) resolver o chain default por conta propria causa
+                    // corrida concorrente no IMDS quando ha mais de um endpoint no mesmo
+                    // processo, falhando com "The security token included in the request
+                    // is invalid" em um deles.
                     if (!string.IsNullOrWhiteSpace(sqsSettings.ServiceUrl))
                     {
                         h.AccessKey(sqsSettings.AccessKey);
@@ -48,6 +50,10 @@ public static class SqsStartup
                             ServiceURL = sqsSettings.ServiceUrl,
                             AuthenticationRegion = sqsSettings.Region
                         });
+                    }
+                    else
+                    {
+                        h.Credentials(Amazon.Runtime.FallbackCredentialsFactory.GetCredentials());
                     }
                 });
 
