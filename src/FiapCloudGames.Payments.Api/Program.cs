@@ -24,6 +24,9 @@ app.MapControllers();
 app.MapOpenApiConfiguration();
 
 app.UseHttpsRedirection();
+
+app.UseMiddleware<SessionValidationMiddleware>();
+
 app.UseAuthorization();
 app.MapHealthCheckEndpoints();
 

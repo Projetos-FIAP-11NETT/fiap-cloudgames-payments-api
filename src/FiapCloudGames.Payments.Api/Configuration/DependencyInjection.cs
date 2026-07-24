@@ -1,6 +1,7 @@
 using FiapCloudGames.Payments.Api.Services;
 using FiapCloudGames.Payments.Application.Behaviors;
 using FiapCloudGames.Payments.Application.Interfaces;
+using FiapCloudGames.Payments.Infrastructure.Configurations;
 using FiapCloudGames.Payments.Infrastructure.Data;
 using FiapCloudGames.Payments.Infrastructure.Repositories;
 using FiapCloudGames.Queue.Configurations;
@@ -19,6 +20,9 @@ public static class DependencyInjection
 
         // Queue / RabbitMQ
         services.AddQueueConfig(configuration);
+
+        // Redis
+        services.AddRedis(configuration);
 
         // MediatR
         services.AddMediatRServices();
