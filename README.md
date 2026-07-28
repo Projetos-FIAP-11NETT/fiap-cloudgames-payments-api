@@ -1,12 +1,12 @@
 # Fiap CloudGames — Payments API
 
-API de pagamentos do ecossistema **CloudGames** (FIAP). Responsável por criar, processar e consultar pagamentos de pedidos, com integração a filas (RabbitMQ) para processamento assíncrono.
+API de pagamentos do ecossistema **CloudGames** (FIAP). Responsável por criar, processar e consultar pagamentos de pedidos, com integração a filas (RabbitMQ / Amazon SQS) para processamento assíncrono.
 
 ## Tecnologias
 
 - **.NET 10** — ASP.NET Core Web API  
 - **PostgreSQL** — persistência (Entity Framework Core)  
-- **RabbitMQ** — mensageria (MassTransit)  
+- **RabbitMQ / Amazon SQS** — mensageria (MassTransit + consumer/publisher SQS para o evento `IOrderPlaced`, usado no deploy real na AWS)  
 - **MediatR** — CQRS (commands/queries)  
 - **FluentValidation** — validação de comandos  
 - **OpenAPI / Scalar** — documentação da API  
